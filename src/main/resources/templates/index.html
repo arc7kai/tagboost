@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TagBoost</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        :root {
+            --dark-bg: #0A0A0A;
+            --dark-card: #1C2526;
+            --dark-text: #E0E0E0;
+            --dark-accent: #4A90E2;
+            --dark-accent-hover: #357ABD;
+            --dark-field-bg: #1C2526;
+            --light-bg: #FFFFFF;
+            --light-card: #FFFFFF;
+            --light-text: #333333;
+            --light-accent: #4A90E2;
+            --light-accent-hover: #357ABD;
+            --light-field-bg: #FFFFFF;
+            --error-bg: #7f1d1d;
+            --error-border: #ef4444;
+            --card-radius: 12px;
+            --transition-speed: 0.3s;
+        }
+        [data-theme="light"] {
+            --bg-color: var(--light-bg);
+            --card-bg: var(--light-card);
+            --text-color: var(--light-text);
+            --accent-color: var(--light-accent);
+            --accent-hover: var(--light-accent-hover);
+            --field-bg: var(--light-field-bg);
+            --error-bg: #fef2f2;
+        }
+        [data-theme="dark"] {
+            --bg-color: var(--dark-bg);
+            --card-bg: var(--dark-card);
+            --text-color: var(--dark-text);
+            --accent-color: var(--dark-accent);
+            --accent-hover: var(--dark-accent-hover);
+            --field-bg: var(--dark-field-bg);
+            --error-bg: #7f1d1d;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+        body {
+            background: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .toggle-mode {
+            width: 60px;
+            height: 30px;
+            background: #444;
+            border-radius: 15px;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px;
+            cursor: pointer;
+        }
+        [data-theme="light"] .toggle-mode {
+            background: #ddd;
+        }
+        .toggle-mode .circle {
+            width: 25px;
+            height: 25px;
+            background: #fff;
+            border-radius: 50%;
+            position: absolute;
+            left: 5px;
+            transition: left var(--transition-speed), transform var(--transition-speed);
+        }
+        [data-theme="light"] .circle {
+            left: 30px;
+            transform: scale(1.1);
+        }
+        .icon {
+            font-size: 18px;
+            transition: transform var(--transition-speed), color var(--transition-speed);
+        }
+        .toggle-mode:hover .icon {
+            transform: scale(1.2);
+            color: var(--accent-color);
+        }
+        .logo-container {
+            text-align: center;
+            margin: 15px 0;
+            animation: fadeIn 2s ease-in-out;
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+        }
+        .logo-container::before {
+            content: "";
+            position: absolute;
+            top: calc(100% - 2px);
+            width: 100%;
+            height: 4px;
+            background: var(--accent-color);
+            transform-origin: center;
+            transform: scaleX(0);
+            animation: line-animation 3s ease infinite alternate;
+        }
+        .logo-container h1#page-logo {
+            font: bold 4rem 'Poppins', sans-serif;
+            margin: 0;
+            color: var(--accent-color);
+            animation: clip-path-reveal-1 3s ease infinite alternate;
+        }
+        .content {
+            text-align: center;
+            margin: 20px auto;
+            height: 60px;
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+        }
+        .text-glow {
+            font-size: 1.8em;
+            font-weight: 600;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            left: 50%;
+            top: 50%;
+            white-space: nowrap;
+        }
+        .text-glow:nth-child(1) {
+            color: transparent;
+            -webkit-text-stroke: 1px var(--accent-color);
+        }
+        .text-glow.animated {
+            color: var(--text-color);
+            animation: animate-clip 4s ease-in-out infinite;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            padding: 15px;
+            margin: 20px auto;
+        }
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+        }
+        .section-title i {
+            margin-right: 8px;
+            animation: pulseIcon 1.5s ease-in-out infinite;
+        }
+        .error {
+            background: var(--error-bg);
+            color: var(--text-color);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            border-left: 4px solid var(--error-border);
+            animation: shake 0.5s ease;
+        }
+        .form-section {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--card-radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transition: transform var(--transition-speed);
+        }
+        .form-section:hover {
+            transform: translateY(-3px);
+        }
+        .form-section .input-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        .form-section input, .form-section textarea {
+            width: 100%;
+            padding: 12px 40px 12px 12px;
+            border: 1px solid var(--accent-color);
+            border-radius: 6px;
+            background: var(--field-bg);
+            color: var(--text-color);
+            font-size: 0.95rem;
+            transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+        }
+        .form-section input::placeholder, .form-section textarea::placeholder {
+            color: #94a3b8;
+            opacity: 1;
+        }
+        .form-section input:focus, .form-section textarea:focus {
+            transform: scale(1.01);
+            box-shadow: 0 0 8px rgba(74,144,226,0.3);
+            outline: none;
+        }
+        .form-section .input-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent-color);
+            font-size: 1.1rem;
+            transition: transform var(--transition-speed);
+        }
+        .form-section input:not(:placeholder-shown) + .input-icon,
+        .form-section textarea:not(:placeholder-shown) + .input-icon {
+            transform: translateY(-50%) rotate(360deg);
+        }
+        .form-section textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .form-section button {
+            background: var(--accent-color);
+            color: #fff;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            transition: transform var(--transition-speed);
+            width: 100%;
+            justify-content: center;
+        }
+        .form-section button:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+        .form-section button:active {
+            transform: translateY(0);
+        }
+        .form-section button i {
+            margin-right: 8px;
+            animation: spin 2s linear infinite;
+        }
+        .form-section button:hover i {
+            transform: scale(1.1);
+        }
+        .form-section button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%,-50%);
+            transition: width 0.4s ease, height 0.4s ease;
+        }
+        .form-section button:active::after {
+            width: 200px;
+            height: 200px;
+        }
+        .resource {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transition: transform var(--transition-speed);
+            position: relative;
+        }
+        .resource:hover {
+            transform: scale(1.01);
+        }
+        .resource::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 3px;
+            background: var(--accent-color);
+            transition: left 0.4s ease;
+        }
+        .resource:hover::before {
+            left: 0;
+        }
+        .resource h5 {
+            font-size: 1.3rem;
+            color: var(--accent-color);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+        .resource h5 i {
+            margin-right: 8px;
+            font-size: 1.1rem;
+            animation: spin 2s linear infinite;
+        }
+        .resource a {
+            color: var(--accent-color);
+            text-decoration: none;
+            transition: color var(--transition-speed);
+        }
+        .resource a:hover {
+            color: var(--accent-hover);
+            text-decoration: underline;
+        }
+        .resource p {
+            color: var(--text-color);
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .annotation-section {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform var(--transition-speed);
+        }
+        .annotation-section:hover {
+            transform: translateY(-2px);
+        }
+        .annotation-section p {
+            font-size: 1rem;
+            color: var(--accent-color);
+            margin-bottom: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        .annotation-section p i {
+            margin-right: 8px;
+            font-size: 1.1rem;
+            animation: pulseIcon 1.5s ease-in-out infinite;
+        }
+        .annotation-section ul {
+            list-style: none;
+            margin-bottom: 15px;
+        }
+        .annotation-section li {
+            color: var(--text-color);
+            font-size: 0.9rem;
+            padding: 10px;
+            border-left: 3px solid var(--accent-color);
+            margin-bottom: 8px;
+            background: linear-gradient(to right, rgba(74,144,226,0.1), transparent);
+            transition: transform var(--transition-speed);
+            animation: slideInLeft 0.5s ease-out;
+        }
+        .annotation-section li:hover {
+            transform: translateX(3px);
+        }
+        .annotation-section li.no-annotations {
+            color: #94a3b8;
+            font-style: italic;
+            border-left: none;
+            background: none;
+            padding-left: 0;
+        }
+        .annotation-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .annotation-form .input-wrapper {
+            margin-bottom: 10px;
+            flex: 1 1 48%;
+            min-width: 150px;
+        }
+        .annotation-form input {
+            padding: 10px 35px 10px 10px;
+            border-radius: 6px;
+            background: var(--field-bg);
+            border: 1px solid var(--accent-color);
+            font-size: 0.9rem;
+        }
+        .annotation-form input:focus {
+            transform: scale(1.01);
+            box-shadow: 0 0 8px rgba(74,144,226,0.3);
+        }
+        .annotation-form button {
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            flex: 1 1 100%;
+        }
+        .no-resources {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 1.1rem;
+            margin-top: 20px;
+            font-style: italic;
+            animation: fadeIn 1s ease-out;
+        }
+        .icons {
+            display: flex;
+            justify-content: center;
+            margin: 30px auto;
+            width: 100%;
+            max-width: 600px;
+        }
+        .icons ul {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .icons a {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 60px;
+            width: 60px;
+            border-radius: 50%;
+            font-size: 50px;
+            color: var(--text-color);
+            transition: all 0.7s ease;
+        }
+        [data-theme="light"] .icons a {
+            background-color: var(--card-bg);
+            border: 1px solid var(--accent-color);
+        }
+        .icons a:hover {
+            font-size: 40px;
+            color: var(--accent-color);
+            box-shadow: 0 0 30px var(--accent-color);
+            transform: rotate(360deg);
+        }
+        [data-theme="dark"] .icons a {
+            background-color: transparent;
+        }
+        @keyframes animate-clip {
+            0%, 100% { clip-path: polygon(0% 45%, 16% 44%, 33% 50%, 54% 60%, 70% 61%, 84% 59%, 100% 52%, 100% 100%, 0% 100%); }
+            50% { clip-path: polygon(0% 60%, 15% 65%, 34% 66%, 51% 62%, 67% 50%, 84% 45%, 100% 46%, 100% 100%, 0% 100%); }
+        }
+        @keyframes line-animation {
+            0% { transform: scaleX(0); }
+            20% { transform: scaleX(1); }
+            50% { transform: scaleX(1); top: 0px; }
+            80% { transform: scaleX(0.2); top: 0px; }
+            100% { transform: scaleX(0.2); top: 0px; }
+        }
+        @keyframes clip-path-reveal-1 {
+            0%, 25% { clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0% 100%); }
+            50% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(-5px); }
+        }
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-15px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes pulseIcon {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+        @media (max-width: 768px) {
+            .text-glow { font-size: 1.3em; }
+            .logo-container h1#page-logo { font-size: 2.5rem; }
+            .container { padding: 10px; }
+            .form-section { padding: 15px; }
+            .content { margin: 15px auto; height: 50px; }
+            .annotation-form .input-wrapper { flex: 1 1 100%; }
+        }
+        @media (max-width: 480px) {
+            .text-glow { font-size: 1em; }
+            .logo-container h1#page-logo { font-size: 2rem; }
+            .content { margin: 10px auto; height: 40px; }
+            .form-section input, .form-section textarea { font-size: 0.85rem; }
+            .form-section button { font-size: 0.85rem; }
+            .icons a { height: 50px; width: 50px; font-size: 40px; }
+            .icons a:hover { font-size: 35px; }
+        }
+        @media (max-width: 320px) {
+            .text-glow { font-size: 0.9em; }
+            .logo-container h1#page-logo { font-size: 1.8rem; }
+            .container { padding: 8px; }
+            .form-section { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+<div class="toggle-mode" onclick="toggleDarkMode()">
+    <i class="fas fa-sun icon"></i>
+    <div class="circle"></div>
+    <i class="fas fa-moon icon"></i>
+</div>
+<div class="logo-container">
+    <h1 id="page-logo">TagBoost</h1>
+</div>
+<div class="content">
+    <h2 class="text-glow">Empower Your Web Search</h2>
+    <h2 class="text-glow animated">Empower Your Web Search</h2>
+</div>
+<div class="container">
+    <h1 class="text-center section-title">
+        <i class="fas fa-rocket"></i> TagBoost Search Engine
+    </h1>
+    <div th:if="${error}" class="error" th:text="${error}"></div>
+    <div class="form-section">
+        <h2 class="section-title"><i class="fas fa-plus-circle"></i> Add Web Resource</h2>
+        <form th:action="@{/resource}" method="post">
+            <div class="input-wrapper">
+                <input type="url" name="url" placeholder="https://example.com" required>
+                <i class="fas fa-globe input-icon"></i>
+            </div>
+            <div class="input-wrapper">
+                <textarea name="content" placeholder="Enter resource content" rows="3" required></textarea>
+                <i class="fas fa-file-alt input-icon"></i>
+            </div>
+            <button type="submit"><i class="fas fa-save"></i> Add Resource</button>
+        </form>
+    </div>
+    <div class="form-section">
+        <h2 class="section-title"><i class="fas fa-search"></i> Search Resources</h2>
+        <form th:action="@{/search}" method="get">
+            <div class="input-wrapper">
+                <input type="text" name="keyword" th:value="${keyword}" placeholder="Search keyword">
+                <i class="fas fa-search input-icon"></i>
+            </div>
+            <button type="submit"><i class="fas fa-search"></i> Search</button>
+        </form>
+    </div>
+    <div>
+        <h2 class="section-title"><i class="fas fa-database"></i> Resources</h2>
+        <div th:each="resource : ${resources}" class="resource">
+            <h5><i class="fas fa-link"></i> <a th:href="${resource.url}" th:text="${resource.url}" target="_blank"></a></h5>
+            <p><strong>Content:</strong> <span th:text="${resource.content}"></span></p>
+            <div class="annotation-section">
+                <p><i class="fas fa-comments"></i> Annotations:</p>
+                <ul>
+                    <li th:each="annotation : ${resource.annotations}"
+                        th:text="${annotation.text} + ' by ' + ${annotation.author} + ' on ' + ${#dates.format(annotation.date, 'yyyy-MM-dd HH:mm')}">
+                    </li>
+                    <li th:if="${resource.annotations.isEmpty()}" class="no-annotations">No annotations yet</li>
+                </ul>
+                <form th:action="@{/annotation}" method="post" class="annotation-form">
+                    <input type="hidden" name="resourceId" th:value="${resource.id}">
+                    <div class="input-wrapper">
+                        <input type="text" name="text" placeholder="Annotation" required>
+                        <i class="fas fa-comment input-icon"></i>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="text" name="author" placeholder="Author" required>
+                        <i class="fas fa-user input-icon"></i>
+                    </div>
+                    <button type="submit"><i class="fas fa-comment"></i> Add Annotation</button>
+                </form>
+            </div>
+        </div>
+        <p th:if="${resources.isEmpty()}" class="no-resources">No resources found.</p>
+    </div>
+    <div class="icons">
+        <ul>
+            <li><a href="https://github.com/arc7kai/"><ion-icon name="logo-github"></ion-icon></a></li>
+            <li><a href="mailto:sashipartaps.p000.com"><ion-icon name="mail"></ion-icon></a></li>
+            <li><a href="https://www.linkedin.com/in/shashi-partap-3673b9298/"><ion-icon name="logo-linkedin"></ion-icon></a></li>
+            <li><a href="https://twitter.com"><ion-icon name="logo-twitter"></ion-icon></a></li>
+        </ul>
+    </div>
+</div>
+<script>
+    // Load theme from localStorage or default to light
+    function loadTheme() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.body.dataset.theme = savedTheme;
+    }
+
+    // Toggle theme and save to localStorage
+    function toggleDarkMode() {
+        const body = document.body;
+        const isDark = body.dataset.theme === 'dark';
+        const newTheme = isDark ? 'light' : 'dark';
+        body.dataset.theme = newTheme;
+        localStorage.setItem('theme', newTheme);
+    }
+
+    // Initialize theme on page load
+    loadTheme();
+</script>
+</body>
+</html>
